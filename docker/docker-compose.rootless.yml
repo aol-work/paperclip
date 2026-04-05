@@ -1,0 +1,47 @@
+services:
+  paperclip:
+    container_name: paperclip-rootless
+    image: paperclip-rootless:local
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        USER_UID: "${USER_UID:?USER_UID must be set}"
+        USER_GID: "${USER_GID:?USER_GID must be set}"
+    ports:
+      - "${PAPERCLIP_PORT:-3100}:3100"
+    environment:
+      USER_UID: "${USER_UID:?USER_UID must be set}"
+      USER_GID: "${USER_GID:?USER_GID must be set}"
+      HOST: "0.0.0.0"
+      PORT: "3100"
+      PAPERCLIP_HOME: "/paperclip"
+      PAPERCLIP_INSTANCE_ID: "default"
+      PAPERCLIP_CONFIG: "/paperclip/instances/default/config.json"
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated"
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "private"
+      PAPERCLIP_PUBLIC_URL: "${PAPERCLIP_PUBLIC_URL:?PAPERCLIP_PUBLIC_URL must be set}"
+      PAPERCLIP_ALLOWED_HOSTNAMES: "${PAPERCLIP_ALLOWED_HOSTNAMES:-localhost}"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+      BETTER_AUTH_URL: "${BETTER_AUTH_URL:?BETTER_AUTH_URL must be set}"
+      BETTER_AUTH_BASE_URL: "${BETTER_AUTH_BASE_URL:?BETTER_AUTH_BASE_URL must be set}"
+      BETTER_AUTH_TRUSTED_ORIGINS: "${BETTER_AUTH_TRUSTED_ORIGINS:?BETTER_AUTH_TRUSTED_ORIGINS must be set}"
+      PAPERCLIP_TELEMETRY_DISABLED: "1"
+      DO_NOT_TRACK: "1"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      CODEX_HOME: "/paperclip/.codex"
+    volumes:
+      - type: volume
+        source: paperclip-data
+        target: /paperclip
+      - type: volume
+        source: paperclip-workspace
+        target: /workspace
+    command: ["bash", "/app/scripts/docker-paperclip-launch.sh"]
+    restart: unless-stopped
+
+volumes:
+  paperclip-data:
+    name: "${PAPERCLIP_DATA_VOLUME:-paperclip-data}"
+  paperclip-workspace:
+    name: "${PAPERCLIP_WORKSPACE_VOLUME:-paperclip-workspace}"

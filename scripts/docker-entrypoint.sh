@@ -26,4 +26,20 @@ if [ "$changed" = "1" ]; then
     chown -R node:node /paperclip
 fi
 
+ensure_writable_for_node() {
+    target="$1"
+    if [ ! -e "$target" ]; then
+        mkdir -p "$target"
+    fi
+    if gosu node test -w "$target" >/dev/null 2>&1; then
+        return 0
+    fi
+    echo "Fixing ownership on $target"
+    chown -R node:node "$target"
+}
+
+ensure_writable_for_node /paperclip
+ensure_writable_for_node /paperclip/.codex
+ensure_writable_for_node /workspace
+
 exec gosu node "$@"
